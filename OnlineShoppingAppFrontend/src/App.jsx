@@ -8,12 +8,14 @@ import AddProduct from "./pages/products/AddProduct";
 import OrderConfirmed from "./pages/OrderConfirmed";
 import ProductDetails from "./components/ProductDetails";
 import Login from "./pages/Login";
+import Documentation from "./pages/Documentation";
 function App() {
     return (
         <BrowserRouter>
           <Navbar />
             <Routes>
-                <Route path="/" element={<Products />} />
+                <Route path="/" element={<Documentation />} />
+                <Route path="/products" element={<Products />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<Checkout />} />

@@ -1,21 +1,18 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation,useNavigate  } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import cartService from "../services/cartService";
 import authService from "../services/authService";
 
 const Navbar = () => {
-    const navigate = useNavigate(); 
+    const navigate = useNavigate();
     const [cartCount, setCartCount] = useState(0);
-
     const customerId = localStorage.getItem("userId");
     const userName = localStorage.getItem("userName");
     const location = useLocation();
-    // console.log("Customer ID in Navbar:", customerId);
 
     const loadCart = async () => {
         try {
             const response = await cartService.getCart(customerId);
-
             setCartCount(response.data.cartItems.length);
         } catch {
             setCartCount(0);
@@ -29,27 +26,23 @@ const Navbar = () => {
 
     useEffect(() => {
         loadCart();
-
-        const handleCartUpdate = () => {
-            loadCart();
-        };
-
-        window.addEventListener("cartUpdated", handleCartUpdate);
-
-        return () => {
-            window.removeEventListener("cartUpdated", handleCartUpdate);
-        };
+        window.addEventListener("cartUpdated", loadCart);
+        return () => window.removeEventListener("cartUpdated", loadCart);
     }, []);
 
     return (
-        <nav className="navbar navbar-expand-lg navbar-dark bg-dark shadow-lg sticky-top">
+        <nav className="navbar navbar-expand-lg sticky-top" style={{ 
+            background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+            boxShadow: '0 4px 20px rgba(245, 87, 108, 0.3)'
+        }}>
             <div className="container">
-                {/* Brand */}
-                <Link className="navbar-brand fw-bold fs-4" to="/">
-                    Online Shopping
+                <Link className="navbar-brand fw-bold fs-4" to="/" style={{ 
+                    color: '#fff',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                }}>
+                    🛒 BuyHatke
                 </Link>
 
-                {/* Mobile Toggle Button */}
                 <button
                     className="navbar-toggler border-0"
                     type="button"
@@ -58,19 +51,27 @@ const Navbar = () => {
                     aria-controls="navbarNav"
                     aria-expanded="false"
                     aria-label="Toggle navigation"
+                    style={{ color: '#fff' }}
                 >
                     <span className="navbar-toggler-icon"></span>
                 </button>
 
-                {/* Navbar Links */}
                 <div className="collapse navbar-collapse" id="navbarNav">
-                    <ul className="navbar-nav ms-auto align-items-lg-center">
+                    <ul className="navbar-nav ms-auto align-items-lg-center gap-2">
                         <li className="nav-item">
                             <Link
-                                className={`nav-link px-3 fw-semibold ${location.pathname === "/" ? "active" : ""}`}
-                                to="/"
+                                className={`nav-link px-3 fw-semibold ${location.pathname === "/products" ? "active" : ""}`}
+                                to="/products"
+                                style={{
+                                    color: location.pathname === "/" ? '#fff' : 'rgba(255,255,255,0.85)',
+                                    background: location.pathname === "/" ? 'rgba(255,255,255,0.2)' : 'transparent',
+                                    borderRadius: '8px',
+                                    transition: 'all 0.3s ease'
+                                }}
+                                onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.25)'}
+                                onMouseLeave={(e) => e.target.style.background = location.pathname === "/" ? 'rgba(255,255,255,0.2)' : 'transparent'}
                             >
-                                Products
+                                📦 Products
                             </Link>
                         </li>
 
@@ -78,10 +79,25 @@ const Navbar = () => {
                             <Link
                                 className={`nav-link px-3 fw-semibold position-relative ${location.pathname === "/cart" ? "active" : ""}`}
                                 to="/cart"
+                                style={{
+                                    color: location.pathname === "/cart" ? '#fff' : 'rgba(255,255,255,0.85)',
+                                    background: location.pathname === "/cart" ? 'rgba(255,255,255,0.2)' : 'transparent',
+                                    borderRadius: '8px',
+                                    transition: 'all 0.3s ease'
+                                }}
+                                onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.25)'}
+                                onMouseLeave={(e) => e.target.style.background = location.pathname === "/cart" ? 'rgba(255,255,255,0.2)' : 'transparent'}
                             >
-                                Cart
+                                🛒 Cart
                                 {cartCount > 0 && (
-                                    <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill" style={{
+                                        background: '#ffd93d',
+                                        color: '#333',
+                                        boxShadow: '0 2px 8px rgba(255,217,61,0.5)',
+                                        fontSize: '0.7rem',
+                                        padding: '0.35rem 0.6rem',
+                                        fontWeight: 'bold'
+                                    }}>
                                         {cartCount}
                                         <span className="visually-hidden">items in cart</span>
                                     </span>
@@ -89,30 +105,43 @@ const Navbar = () => {
                             </Link>
                         </li>
 
-                        {/* Customer ID (optional) */}
                         {userName && (
                             <li className="nav-item">
-                                <span className="nav-link text-light opacity-50 small">
-                                    Welcome, {userName}
+                                <span className="nav-link" style={{ 
+                                    color: 'rgba(255,255,255,0.9)',
+                                    fontSize: '0.9rem',
+                                    fontWeight: '500'
+                                }}>
+                                    👋 {userName}
                                 </span>
                             </li>
                         )}
+
                         {customerId && (
-                            <li className="nav-item">
-                                <span className="nav-link text-light opacity-50 small">
-                                    Welcome, {customerId}
-                                </span>
+                            <li className="nav-item ms-2">
+                                <button
+                                    className="btn btn-sm px-4 py-2 fw-semibold"
+                                    onClick={handleLogout}
+                                    style={{
+                                        background: 'rgba(255,255,255,0.2)',
+                                        color: '#fff',
+                                        border: '1px solid rgba(255,255,255,0.3)',
+                                        borderRadius: '25px',
+                                        transition: 'all 0.3s ease',
+                                        backdropFilter: 'blur(10px)'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.target.style.background = '#fff';
+                                        e.target.style.color = '#f5576c';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.target.style.background = 'rgba(255,255,255,0.2)';
+                                        e.target.style.color = '#fff';
+                                    }}
+                                >
+                                    🚪 Logout
+                                </button>
                             </li>
-                        )}
-                        {customerId &&(
-                            <li className="nav-item ms-3">
-                            <button
-                                className="btn btn-outline-light btn-sm"
-                                onClick={handleLogout}
-                            >
-                                Logout
-                            </button>
-                        </li>
                         )}
                     </ul>
                 </div>
