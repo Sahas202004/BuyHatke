@@ -3,4 +3,5 @@
   <Project Path="Models/Models.csproj" />
   <Project Path="OnlineShoppingApp/OnlineShoppingApp.csproj" />
   <Project Path="Services/Services.csproj" Id="8def4c5c-0091-4ab2-b3fb-cd68a5e0ff34" />
+  <Project Path="Tests/Tests.csproj" Id="d66f6991-4bbe-44e4-b510-ecf8707ef273" />
 </Solution>
