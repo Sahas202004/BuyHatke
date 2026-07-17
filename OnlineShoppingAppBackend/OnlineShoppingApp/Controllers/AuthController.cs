@@ -61,10 +61,14 @@ namespace OnlineShoppingApp.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto loginDto)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             var result = await _authService.LoginAsync(loginDto);
             if (result == null)
             {
-                return Unauthorized(new
+                return Unauthorized(new ErrorResponseDto
                 {
                     Message = "Invalid Email Or Password"
                 });

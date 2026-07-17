@@ -94,5 +94,134 @@ namespace Tests.Controllers
             _authService.Verify(x => x.RegisterAsync(It.IsAny<RegisterDto>()),Times.Once);
         }
 
+
+        [Fact]
+
+        public async Task Register_ReturnsBadRequest_WhenModelStateIsInvalid()
+        {
+
+            //Arrange
+            var registerDto = new RegisterDto
+            {
+                Name = "Sahas",
+                UserName = "Sahas123",
+                Email = "sahas@gmail.com",
+                Password = "Sk123@#",
+                //ConfirmPassword = "Sk123@#"
+            };
+
+            _authController.ModelState.AddModelError(
+                    "ModelState", "ModelStateIsInvalid"
+                );
+
+            //Act
+            var result = await _authController.Register(registerDto);
+
+            //Assert
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+
+            Assert.Equal(400, badRequest.StatusCode);
+
+            _authService
+                .Verify(
+                    x => x.RegisterAsync(It.IsAny<RegisterDto>()), Times.Never()
+                );
+        }
+
+
+        [Fact]
+        public async Task Login_ReturnsOk_WhenLoginIsSuccessful() 
+        {
+            //Arrange
+            LoginDto loginDto = new LoginDto
+            {
+                Email = "sahas@gmail.com",
+                Password = "Sk123123"
+            };
+
+            LoginResponseDto loginResponseDto = new LoginResponseDto
+            {
+                Token = "jwt-token",
+                UserName = "Sahas",
+                Email = "sahas@gmail.com",
+                UserId = "1"
+            };
+            IdentityResult identityResult = IdentityResult.Success;
+
+            _authService
+                .Setup(x => x.LoginAsync(It.IsAny<LoginDto>()))
+                .ReturnsAsync(loginResponseDto);
+
+            //Act
+            var result = await _authController.Login(loginDto);
+
+            //Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var loginResponse = Assert.IsType<LoginResponseDto>(okResult.Value);
+            Assert.Equal(200, okResult.StatusCode);
+            Assert.Equal(loginResponseDto, loginResponse);
+
+            _authService.Verify(
+                x => x.LoginAsync(It.IsAny<LoginDto>()), Times.Once()
+                );
+        }
+
+        [Fact]
+        public async Task Login_ReturnsUnAuthorized_WhenLoginFails()
+        {
+            //Arrange
+            LoginDto loginDto = new LoginDto
+            {
+                Email = "sahas@gmail.com",
+                Password = "Sk123123"
+            };
+
+            string expectedMessage = "Invalid Email Or Password";
+
+            _authService
+                .Setup(x => x.LoginAsync(It.IsAny<LoginDto>()))
+                .ReturnsAsync((LoginResponseDto)null);
+
+            //Act
+            var result= await _authController.Login(loginDto);
+
+            //Assert
+            var unauthorized = Assert.IsType<UnauthorizedObjectResult>(result);
+            var actualMessage = Assert.IsType<ErrorResponseDto>(unauthorized.Value);
+            Assert.Equal(401,unauthorized.StatusCode);
+            Assert.Equal(expectedMessage, actualMessage.Message);
+            
+
+            _authService.Verify(
+                x => x.LoginAsync(It.IsAny<LoginDto>()),
+                Times.Once()
+                );
+        }
+
+        [Fact]
+        public async Task Login_ReturnsBadRequest_WhenModelIsInvalid()
+        {
+            //Arrange
+            LoginDto loginDto = new LoginDto
+            {
+                Email = "sahas@gmail.com",
+                Password = "Sk123123"
+            };
+
+            _authController.ModelState.AddModelError("InvalidModel", "Model Passed is Invalid");
+
+            //Act 
+            var result=await _authController.Login(loginDto);
+
+            //Assert
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(400, badRequest.StatusCode);
+
+            _authService
+                .Verify(
+                    x=>x.LoginAsync(It.IsAny<LoginDto>()), Times.Never()
+                );
+        }
+
     }
 }
